@@ -27,8 +27,32 @@ struct saved_state {
 	float angle;
 	int32_t x;
 	int32_t y;
+	float xRaw;
+	float yRaw;
+
+	int32_t xPrevious;
+	int32_t yPrevious;
+	float xRawPrevious;
+	float yRawPrevious;
+
+	int32_t Dx;
+	int32_t Dy;
+	float DxRaw;
+	float DyRaw;
+
 	int32_t key;
 };
+
+struct saved_state_oldvector {
+	float angle;
+	int32_t x;
+	int32_t y;
+	float xRaw;
+	float yRaw;
+
+	int32_t key;
+};
+
 
 /**
 * Shared state for our app.
@@ -119,6 +143,14 @@ void getSomeStaticInitStuff()
 
 
 }
+
+void parseNMySQLTextCommand()
+{
+	char* pstrB = 0; //  = null;
+
+	// convert text to gl function and.. talk back some
+
+}
 /**
 * Initialize an EGL context for the current display.
 */
@@ -179,13 +211,22 @@ static int engine_init_display(struct engine* engine) {
 	engine->state.angle = 0;
 
 
+	// initize surface color picker values
+
+	// alloc mini html dom
+
+	// draw up base login and listvie and detial view uis
 
 
 	// Initialize GL state.
-	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
+//	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
+	//glHint( GL_FASTEST);
 	glEnable(GL_CULL_FACE);
-	glShadeModel(GL_SMOOTH);
+	//glShadeModel(GL_SMOOTH);
 	glDisable(GL_DEPTH_TEST);
+
+	glViewport(0, 0, w, h);
+	//2/10/2020 glOrthof(0, w, h, 0, -100, 100);
 
 	return 0;
 }
@@ -203,11 +244,27 @@ void DrawCrap()
 
 	GLubyte indices[] = { 0,1,2, // first triangle (bottom left - top left - top right)
 						 0,2,3 }; // second triangle (bottom left - top right - bottom right)
-	glColor4f(1.0f, 1.0f, 1.0f, 0.5f);
-	glVertexPointer(3, GL_FLOAT, 0, vertices);
+	//glColor4f(1.0f, 1.0f, 1.0f, 0.5f);
+	glClearColor(1.0f, 1.0f, 1.0f, 0.5f);
+	//glVertexPointer(3, GL_FLOAT, 0, vertices);
 
 	//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, indices);
-	glDrawElements(GL_TRIANGLES, 4, GL_UNSIGNED_BYTE, indices);
+//	glDrawElements(GL_TRIANGLES, 4, GL_UNSIGNED_BYTE, indices);
+	glVertexAttribPointer(
+		0, //vertexPosition_modelspaceID, // The attribute we want to configure
+		4,                  // size
+		GL_FLOAT,           // type
+		GL_FALSE,           // normalized?
+		0,                  // stride
+		vertices // (void*)0            // array buffer offset
+	);
+
+	// see above glEnableVertexAttribArray(vertexPosition_modelspaceID);
+	glEnableVertexAttribArray(0);
+
+	// Draw the triangle !
+	glDrawArrays(GL_TRIANGLES, 0, 4); // 3 indices starting at 0 -> 1 triangle
+
 }
 void colored_rect(GLfloat left, GLfloat bottom, GLfloat right, GLfloat top, GLfloat R, GLfloat G, GLfloat B, GLfloat AlphaA = 0.9f)
 {
@@ -217,10 +274,81 @@ void colored_rect(GLfloat left, GLfloat bottom, GLfloat right, GLfloat top, GLfl
 		right, top,
 		left, top
 	};
+//	glEnableClientState(GL_VERTEX_ARRAY);
+//	glColor4f(R, G, B, AlphaA);
+//	glVertexPointer(2, GL_FLOAT, 0, rect);
+//	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+	glClearColor(R, G, B, AlphaA);
+	//glVertexPointer(3, GL_FLOAT, 0, vertices);
+
+	//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, indices);
+//	glDrawElements(GL_TRIANGLES, 4, GL_UNSIGNED_BYTE, indices);
+	glVertexAttribPointer(
+		0, //vertexPosition_modelspaceID, // The attribute we want to configure
+		4,                  // size
+		GL_FLOAT,           // type
+		GL_FALSE,           // normalized?
+		0,                  // stride
+		rect // (void*)0            // array buffer offset
+	);
+
+	// see above glEnableVertexAttribArray(vertexPosition_modelspaceID);
+	glEnableVertexAttribArray(0);
+
+	// Draw the triangle !
+	glDrawArrays(GL_TRIANGLES, 0, 4); // 3 indices starting at 0 -> 1 triangle
+
+
+}
+void colored_rect55(GLfloat left, GLfloat bottom, GLfloat right, GLfloat top, GLfloat R, GLfloat G, GLfloat B, GLfloat AlphaA = 0.9f)
+{
+	GLfloat rect[] = {
+		left, bottom,
+		right, bottom,
+		right, top,
+		left, top
+	};
+	//	glEnableClientState(GL_VERTEX_ARRAY);
+	//	glColor4f(R, G, B, AlphaA);
+	//	glVertexPointer(2, GL_FLOAT, 0, rect);
+	//	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+	glClearColor(R, G, B, AlphaA);
+	//glVertexPointer(3, GL_FLOAT, 0, vertices);
+
+	//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, indices);
+//	glDrawElements(GL_TRIANGLES, 4, GL_UNSIGNED_BYTE, indices);
+	glVertexAttribPointer(
+		0, //vertexPosition_modelspaceID, // The attribute we want to configure
+		4,                  // size
+		GL_FLOAT,           // type
+		GL_FALSE,           // normalized?
+		0,                  // stride
+		rect // (void*)0            // array buffer offset
+	);
+
+	// see above glEnableVertexAttribArray(vertexPosition_modelspaceID);
+	glEnableVertexAttribArray(0);
+
+	// Draw the triangle !
+	glDrawArrays(GL_TRIANGLES, 0, 4); // 3 indices starting at 0 -> 1 triangle
+
+
+}
+
+void colored_rect2(GLfloat left, GLfloat bottom, GLfloat right, GLfloat top, GLfloat R, GLfloat G, GLfloat B, GLfloat AlphaA = 0.9f)
+{
+	GLfloat rect[] = {
+		left, bottom,1,
+		right, bottom,1,
+		right, top,1,
+		left, top,1
+	};
+	/*
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glColor4f(R, G, B, AlphaA);
-	glVertexPointer(2, GL_FLOAT, 0, rect);
+	glVertexPointer(3, GL_FLOAT, 0, rect);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+	*/
 
 }
 // GLfloat vVertices[] = {
@@ -757,27 +885,84 @@ void DrawNumberOnePos(int iFontSize)
 }
 
 
+void DrawCircleMiddle()
+{
+
+	float xStart  = -1.0f;
+	float yStart = 0.0f;
+	
+	float xStartOffSet = -1.0f;
+	float	yStartOffSet = 0.0f;
+
+	colored_rect(xStart, yStart, xStartOffSet, yStartOffSet, // Top
+		0.5f,
+		0.5f, 0.5f, 1.0f);
+
+
+}
+GLfloat g_vertex_buffer_data[] = {
+		-1.0f, -1.0f, 0.0f,
+		 1.0f, -1.0f, 0.0f,
+		 0.0f,  1.0f, 0.0f,
+};
+
+
 static void Draw(struct engine* esContext)
 {
 	//	UserData *userData = esContext->userData;
-	GLfloat vVertices[] = { 0.0f, 0.5f, 0.0f,
-	-0.5f, -0.5f, 0.0f,
-	0.5f, -0.5f, 0.0f };
+	///GLfloat vVertices[] = { 0.0f, 0.5f, 0.0f,
+//	-0.5f, -0.5f, 0.0f,
+	////0.5f, -0.5f, 0.0f };
 
 	// Set the viewport
 	//glViewport(0, 0, esContext->width, esContext->height);
 
 	// Clear the color buffer
-	glClear(GL_COLOR_BUFFER_BIT);
+	/////glClear(GL_COLOR_BUFFER_BIT);
 	// Use the program object
 	//glUseProgram(userData->programObject);
 	// Load the vertex data
 //	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, vVertices);
 //	glEnableVertexAttribArray(0);
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glVertexPointer(3, GL_FLOAT, 0, vVertices);
-	glDrawArrays(GL_TRIANGLES, 0, 3);
-	eglSwapBuffers(esContext->display, esContext->surface);
+
+	///glEnableClientState(GL_VERTEX_ARRAY);
+	//glVertexPointer(3, GL_FLOAT, 0, vVertices);
+	//glDrawArrays(GL_TRIANGLES, 0, 3);
+
+
+			   // Clear the screen
+	////glClear(GL_COLOR_BUFFER_BIT);
+
+	// Use our shader
+	////glUseProgram(programID);
+
+	// 1rst attribute buffer : vertices
+//                glEnableVertexAttribArray(vertexPosition_modelspaceID);
+//                glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+	////glVertexAttribPointer(
+	////	0, //vertexPosition_modelspaceID, // The attribute we want to configure
+	////	3,                  // size
+	////	GL_FLOAT,           // type
+	////	GL_FALSE,           // normalized?
+	////	0,                  // stride
+	////	g_vertex_buffer_data // (void*)0            // array buffer offset
+	////);
+
+	// see above glEnableVertexAttribArray(vertexPosition_modelspaceID);
+	////glEnableVertexAttribArray(0);
+
+	// Draw the triangle !
+	////glDrawArrays(GL_TRIANGLES, 0, 3); // 3 indices starting at 0 -> 1 triangle
+
+	////uint32_t GScreenWidth = 1920;
+	////uint32_t GScreenHeight = 1080;
+
+	////void* image = malloc(GScreenWidth * GScreenHeight * 4);
+	////glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	////glReadPixels(0, 0, GScreenWidth, GScreenHeight, GL_RGBA, GL_UNSIGNED_BYTE, image); //GScreenWidth,GScreenHeight,
+
+
+	////eglSwapBuffers(esContext->display, esContext->surface); // update screen
 }
 
 // GEorgiy
@@ -788,6 +973,8 @@ static void Draw(struct engine* esContext)
 //__socketcall int getsockopt(int __fd, int __level, int __option, void* __value, socklen_t* __value_length);
 //__socketcall int listen(int __fd, int __backlog);
 
+
+
 int GetHttpResponseHead(int sock, char* buf, int size)
 {
 	int i;
@@ -795,25 +982,26 @@ int GetHttpResponseHead(int sock, char* buf, int size)
 	memset(buf, 0, size);
 	for (i = 0; i < size - 1; i++) {
 		if (recv(sock, buf + i, 1, 0) != 1) {
-			perror("recv error");
+	//		perror("recv error");
 			return -1;
 		}
 		if (strstr(buf, "\r\n\r\n"))
 			break;
 	}
 	if (i >= size - 1) {
-		puts("Http response head too long.");
+	//	puts("Http response head too long.");
 		return -2;
 	}
 	code = strstr(buf, " 200 ");
 	status = strstr(buf, "\r\n");
 	if (!code || code > status) {
 		*status = 0;
-		printf("Bad http response:\"%s\"\n", buf);
+	//	printf("Bad http response:\"%s\"\n", buf);
 		return -3;
 	}
 	return i;
 }
+
 static char szMemoryReturn[131072];
 
 int HttpGet(const char* server, const char* url)
@@ -990,6 +1178,7 @@ int mouseArracyRect(float iMouseX, float iMouseY)
 }
 int intmain(void)
 {
+	__android_log_print(ANDROID_LOG_INFO, "-----from--jni-------", "-!!!!!INTMAIN!!!!-");
 	char szServer[512] = { 0 };
 	char* head = NULL;
 	char* tail = NULL;
@@ -1081,6 +1270,8 @@ static void engine_draw_frame_0(struct engine* engine) {
 
 	eglSwapBuffers(engine->display, engine->surface);
 }
+int ijjj = 0;
+
 static void engine_draw_frame(struct engine* engine) {
 	if (engine->display == NULL) {
 		// No display.
@@ -1114,9 +1305,14 @@ static void engine_draw_frame(struct engine* engine) {
 
 
 
-	float MouseX = ((float)engine->state.x) / engine->width;
+//	float MouseX = ((float)engine->state.x) / engine->width;
 	//MouseX = MouseX + 0.5f; // (engine->width / 2);
-	float MouseY = ((float)engine->state.y) / engine->height;
+	//float MouseY = ((float)engine->state.y) / engine->height;
+
+		float MouseX = ((float)engine->state.xRaw) / engine->width;
+	//MouseX = MouseX + 0.5f; // (engine->width / 2);
+	float MouseY = ((float)engine->state.yRaw) / engine->height;
+
 
 	//if (MouseX > 0.1f &&  MouseX < 0.2f && MouseY > 0.1f && MouseY < 0.2f)
 	if (MouseX < 1.5f && MouseX > 0.1f)
@@ -1200,6 +1396,7 @@ static void engine_draw_frame(struct engine* engine) {
 	{
 		bIsHoverButton6 = false;
 	}
+	ijjj = 1;
 
 	if (bIsHoverButton)
 	{
@@ -1239,7 +1436,7 @@ static void engine_draw_frame(struct engine* engine) {
 	}
 	if (bIsHoverButton4)
 	{
-
+		
 		colored_rect(0.9, 0.1f, 0.95, 0.2f, 0.5f, 1.0f, 1.0f, 0.9f);
 	}
 	else
@@ -1422,15 +1619,62 @@ static void engine_term_display(struct engine* engine) {
 	engine->context = EGL_NO_CONTEXT;
 	engine->surface = EGL_NO_SURFACE;
 }
+// need special class 2d mouse for 3d object cross line rec/triangle formula "ray casting"
+struct float4d
+{
+	float floatoperator1;
+	float floatoperator2;
+	float floatoperator3;
+	float floatoperator4;
+};
 
+
+float4d getMouseRayProjection(float touchx,float touchy/*,camera*/)
+{
+	float4d newFloat4D;
+	newFloat4D.floatoperator1 = 1.0f;
+	newFloat4D.floatoperator2 = 1.0f;
+
+	// set init normalize x,y code
+
+
+	// matrix invert code
+
+	// return values set code
+
+	return newFloat4D;
+
+}
 /**
 * Process the next input event.
 */
 static int32_t engine_handle_input(struct android_app* app, AInputEvent* event) {
 	struct engine* engine = (struct engine*)app->userData;
 	if (AInputEvent_getType(event) == AINPUT_EVENT_TYPE_MOTION) {
+		
+		engine->state.Dx = engine->state.x - engine->state.xPrevious;
+		engine->state.Dy = engine->state.y - engine->state.yPrevious;
+
+		engine->state.DxRaw = engine->state.xRaw - engine->state.xRawPrevious;
+		engine->state.DyRaw = engine->state.yRaw - engine->state.yRawPrevious;
+
 		engine->state.x = AMotionEvent_getX(event, 0);
 		engine->state.y = AMotionEvent_getY(event, 0);
+		
+		engine->state.xRaw = AMotionEvent_getRawX(event, 0);
+		engine->state.yRaw = AMotionEvent_getRawY(event, 0);
+
+		// ;
+		///int32_t yPrevious;
+		////int32_t xRawPrevious;
+		//int32_t yRawPrevious;
+
+		//int32_t Dx;
+		//int32_t Dy;
+
+	//	int32_t DxRaw;
+	//	int32_t DyRaw;
+
 		return 1;
 	}
 	else if (AInputEvent_getType(event) == AINPUT_EVENT_TYPE_KEY)
@@ -1438,6 +1682,14 @@ static int32_t engine_handle_input(struct android_app* app, AInputEvent* event) 
 		engine->state.key = AKeyEvent_getKeyCode(event);
 		return 2;
 	}
+
+		engine->state.xPrevious = engine->state.x;
+		engine->state.yPrevious = engine->state.y;
+
+		engine->state.xRawPrevious = engine->state.xRaw;
+		engine->state.yRawPrevious = engine->state.yRaw;
+
+
 	return 0;
 }
 
@@ -1510,8 +1762,8 @@ void android_main(struct android_app* state) {
 	//HttpGet(const char* server, const char* url);
 	//int Intmain =intmain();
 	szMemoryReturn[0] = '\0';
-
-	Intmain = intmain();
+	__android_log_print(ANDROID_LOG_INFO, "-----from--glue-------", "-PRE-INTMAIN!!!!-");
+//	Intmain = intmain();
 
 	//new
 	
